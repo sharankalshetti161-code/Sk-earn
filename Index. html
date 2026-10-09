@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SK EARN</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#080d1b;color:white;
+  font-family:Arial,sans-serif
+}
+header{
+  background:#111a30;padding:20px;text-align:center;
+  color:#00e5ff;font-size:28px;font-weight:bold
+}
+main{max-width:430px;margin:auto;padding:18px}
+.card{
+  background:#141e35;padding:20px;border-radius:16px;
+  margin:16px 0;box-shadow:0 4px 15px #0005
+}
+h2{text-align:center}
+input,select{
+  width:100%;padding:13px;margin:8px 0;
+  border:1px solid #394765;border-radius:8px;
+  background:#080d1b;color:white;font-size:16px
+}
+button{
+  width:100%;padding:13px;margin-top:10px;
+  border:0;border-radius:9px;background:#00e5ff;
+  color:#06101b;font-size:16px;font-weight:bold
+}
+.secondary{background:#283550;color:white}
+.hidden{display:none}
+.balance{text-align:center;font-size:25px;color:#00e5ff}
+.small{font-size:13px;color:#b7c4db;line-height:1.5}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+nav button{flex:1;min-width:90px}
+</style>
+</head>
+
+<body>
+<header>⚡ SK EARN</header>
+
+<main>
+  <div class="card">
+    <label id="languageLabel">Language / भाषा</label>
+    <select id="language" onchange="setLanguage()">
+      <option value="en">English</option>
+      <option value="mr">मराठी</option>
+      <option value="hi">हिंदी</option>
+    </select>
+  </div>
+
+  <section id="auth" class="card">
+    <h2 id="authTitle">Create Account</h2>
+    <input id="name" placeholder="Your name">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password"
+           placeholder="Password (8+ characters)">
+
+    <button id="signupBtn" onclick="signup()">Sign Up</button>
+    <button id="loginBtn" class="secondary"
+            onclick="login()">Login</button>
+    <p class="small" id="demoNotice">
+      Demo only. Do not use a real password.
+      Accounts are stored only in this browser.
+    </p>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="card">
+      <h2 id="welcome">Welcome!</h2>
+      <p class="balance">🪙 <span id="coins">0</span> Coins</p>
+      <p class="small" id="value">100 coins = ₹50 gross value.
+      Illustrative calculation only.</p>
+    </div>
+
+    <div class="card">
+      <h2 id="adsTitle">Watch Ads</h2>
+      <p id="adsText">Eligible completed ad: 2 coins.</p>
+      <button onclick="watchAd()" id="adsBtn">Watch Ad</button>
+      <p class="small" id="adsNotice">
+        Demo only: no real ad is shown and no coins are awarded.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2 id="withdrawTitle">Withdraw</h2>
+      <p id="withdrawInfo">
+        Minimum: 100 coins. Demo requests do not send money.
+      </p>
+      <input id="upi" placeholder="UPI ID">
+      <button onclick="withdraw()" id="withdrawBtn">
+        Request Withdrawal
+      </button>
+      <p class="small" id="withdrawMessage"></p>
+    </div>
+
+    <button class="secondary" onclick="logout()" id="logoutBtn">
+      Logout
+    </button>
+  </section>
+</main>
+
+<script>
+const words = {
+  en:{
+    auth:"Create Account",signup:"Sign Up",login:"Login",
+    name:"Your name",email:"Email",password:"Password (8+ characters)",
+    welcome:"Welcome",ads:"Watch Ads",adText:"Eligible completed ad: 2 coins.",
+    adBtn:"Watch Ad",withdraw:"Withdraw",
+    withdrawInfo:"Minimum: 100 coins. Demo requests do not send money.",
+    withdrawBtn:"Request Withdrawal",logout:"Logout",
+    notice:"Demo only. Do not use a real password. Accounts are stored only in this browser.",
+    adNotice:"Demo only: no real ad is shown and no coins are awarded.",
+    value:"100 coins = ₹50 gross value. Illustrative calculation only.",
+    invalid:"Enter your name, email and a password of at least 8 characters.",
+    exists:"Account already exists. Please login.",
+    created:"Demo account created. Now login.",
+    wrong:"Incorrect email or password.",
+    adAlert:"No real ad is connected. No coins were added.",
+    upiError:"Enter a UPI ID.",
+    withdrawAlert:"Demo only: no withdrawal was sent. Real payments require a secure backend."
+  },
+  mr:{
+    auth:"नवीन खाते तयार करा",signup:"Sign Up",login:"Login",
+    name:"तुमचं नाव",email:"ईमेल",password:"पासवर्ड (किमान 8 अक्षरे)",
+    welcome:"स्वागत आहे",ads:"जाहिराती पाहा",
+    adText:"पात्र जाहिरात पूर्ण केल्यावर 2 Coins.",
+    adBtn:"जाहिरात पाहा",withdraw:"पैसे काढा",
+    withdrawInfo:"किमान 100 Coins. Demo मधून पैसे पाठवले जात नाहीत.",
+    withdrawBtn:"पैसे काढण्याची विनंती",logout:"Logout",
+    notice:"ही Demo आहे. खरा पासवर्ड वापरू नका. खाते या ब्राउझरमध्येच साठवले जाते.",
+    adNotice:"Demo: खरी जाहिरात दाखवली जात नाही आणि Coins दिले जात नाहीत.",
+    value:"100 Coins = ₹50 एकूण काल्पनिक मूल्य.",
+    invalid:"नाव, ईमेल आणि किमान 8 अक्षरांचा पासवर्ड भरा.",
+    exists:"हे खाते आधीपासून आहे. Login करा.",
+    created:"Demo खाते तयार झाले. आता Login करा.",
+    wrong:"ईमेल किंवा पासवर्ड चुकीचा आहे.",
+    adAlert:"खरी जाहिरात जोडलेली नाही. Coins दिलेले नाहीत.",
+    upiError:"UPI ID भरा.",
+    withdrawAlert:"Demo: पैसे पाठवलेले नाहीत. खऱ्या पेमेंटसाठी सुरक्षित Backend आवश्यक आहे."
+  },
+  hi:{
+    auth:"नया अकाउंट बनाएं",signup:"Sign Up",login:"Login",
+    name:"आपका नाम",email:"ईमेल",password:"पासवर्ड (कम से कम 8 अक्षर)",
+    welcome:"स्वागत है",ads:"विज्ञापन देखें",
+    adText:"योग्य विज्ञापन पूरा करने पर 2 Coins.",
+    adBtn:"विज्ञापन देखें",withdraw:"पैसे निकालें",
+    withdrawInfo:"कम से कम 100 Coins. Demo से पैसे नहीं भेजे जाते।",
+    withdrawBtn:"पैसे निकालने का अनुरोध",logout:"Logout",
+    notice:"यह Demo है। असली पासवर्ड न डालें। अकाउंट इसी ब्राउज़र में सेव है।",
+    adNotice:"Demo: असली विज्ञापन नहीं दिखता और Coins नहीं मिलते।",
+    value:"100 Coins = ₹50 काल्पनिक कुल मूल्य।",
+    invalid:"नाम, ईमेल और कम से कम 8 अक्षर का पासवर्ड डालें।",
+    exists:"अकाउंट पहले से मौजूद है। Login करें।",
+    created:"Demo अकाउंट बन गया। अब Login करें।",
+    wrong:"ईमेल या पासवर्ड गलत है।",
+    adAlert:"असली विज्ञापन जुड़ा नहीं है। Coins नहीं मिले।",
+    upiError:"UPI ID डालें।",
+    withdrawAlert:"Demo: पैसे नहीं भेजे गए। असली भुगतान के लिए सुरक्षित Backend चाहिए।"
+  }
+};
+
+function setLanguage(){
+  const t=words[document.getElementById("language").value];
+  const ids={
+    authTitle:"auth",signupBtn:"signup",loginBtn:"login",
+    adsTitle:"ads",adsText:"adText",adsBtn:"adBtn",
+    withdrawTitle:"withdraw",withdrawInfo:"withdrawInfo",
+    withdrawBtn:"withdrawBtn",logoutBtn:"logout",
+    demoNotice:"notice",adsNotice:"adNotice",value:"value"
+  };
+  for(const id in ids)
+    document.getElementById(id).textContent=t[ids[id]];
+
+  document.getElementById("name").placeholder=t.name;
+  document.getElementById("email").placeholder=t.email;
+  document.getElementById("password").placeholder=t.password;
+}
+
+function users(){
+  return JSON.parse(localStorage.getItem("ske_demo_users")||"{}");
+}
+
+function signup(){
+  const n=document.getElementById("name").value.trim();
+  const e=document.getElementById("email").value.trim().toLowerCase();
+  const p=document.getElementById("password").value;
+  const t=words[language.value];
+
+  if(!n||!e.includes("@")||p.length<8){
+    alert(t.invalid);return;
+  }
+
+  const u=users();
+  if(u[e]){alert(t.exists);return;}
+
+  // Demo only; not safe for real accounts.
+  u[e]={name:n,password:p,coins:0};
+  localStorage.setItem("ske_demo_users",JSON.stringify(u));
+  alert(t.created);
+}
+
+function login(){
+  const e=document.getElementById("email").value.trim().toLowerCase();
+  const p=document.getElementById("password").value;
+  const u=users();
+  const t=words[language.value];
+
+  if(!u[e]||u[e].password!==p){
+    alert(t.wrong);return;
+  }
+
+  sessionStorage.setItem("ske_demo_current",e);
+  showDashboard();
+}
+
+function showDashboard(){
+  const e=sessionStorage.getItem("ske_demo_current");
+  const u=users();
+  if(!e||!u[e])return;
+
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("welcome").textContent=
+    words[language.value].welcome+", "+u[e].name+"!";
+  document.getElementById("coins").textContent=u[e].coins;
+}
+
+function watchAd(){
+  alert(words[language.value].adAlert);
+}
+
+function withdraw(){
+  const upi=document.getElementById("upi").value.trim();
+  const t=words[language.value];
+  document.getElementById("withdrawMessage").textContent=
+    upi?t.withdrawAlert:t.upiError;
+}
+
+function logout(){
+  sessionStorage.removeItem("ske_demo_current");
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("auth").classList.remove("hidden");
+}
+
+document.getElementById("language").value="mr";
+setLanguage();
+</script>
+</body>
+</html>
